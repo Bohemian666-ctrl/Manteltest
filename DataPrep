@@ -31,3 +31,25 @@ df.to_csv("matriz_distancia_genetica.csv")
 # Padol_AD33.trim,-5.229139,-78.356556
 # Padol_AD36.trim,-5.229139,-78.356556
 # Padol_AE238.trim,-5.500000,-73.500000
+import pandas as pd
+from geopy.distance import geodesic
+import numpy as np
+# Cargar la ruta CSV
+geo_df = pd.read_csv("codigo,latitude,longitude.csv")
+print(geo_df.head())
+# Cargar coordenadas con 'codigo' como índice
+coords_df = pd.read_csv("codigo,latitude,longitude.csv", index_col=0)
+# Obtener lista de códigos y coordenadas
+samples = coords_df.index.tolist()
+coordinates = coords_df[['latitude', 'longitude']].values
+# Inicializar matriz vacía
+n = len(samples)
+dist_matrix = np.zeros((n, n))
+# Calcular distancias geográficas entre pares de muestras
+for i in range(n):
+    for j in range(n):
+        dist_matrix[i, j] = geodesic(coordinates[i], coordinates[j]).kilometers
+# Convertir a DataFrame con nombres de muestra como encabezados
+geo_dist_df = pd.DataFrame(dist_matrix, index=samples, columns=samples)
+# Guardar como CSV con encabezado y nombre de filas
+geo_dist_df.to_csv("Matriz_distancia_geografica.csv")
