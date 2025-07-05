@@ -1,0 +1,27 @@
+# Cuanto tenga ambos archivos csv, matriz de distancia genetica y geografica
+#pip install scikit-bio pandas scipy
+from skbio.stats.distance import mantel
+import pandas as pd
+from scipy.spatial.distance import squareform
+# Cargar las rutas de las matrices
+geo_df = pd.read_csv("Matrizdistgeo_Paulscalbrid.csv", index_col=0)
+gen_df = pd.read_csv("Matrizdistgen_Paulscalbrid.csv", index_col=0)
+# Convertir a matrices de distancia (numpy)
+geo_matrix = geo_df.values
+gen_matrix = gen_df.values
+# Ejecutar test de Mantel
+mantel_stat, p_value, n_perm = mantel(geo_matrix, gen_matrix, method='pearson', permutations=999)
+print(f"Estadístico de Mantel: {mantel_stat:.4f}")
+print(f"Valor p: {p_value:.4f}")
+print(f"Número de permutaciones: {n_perm}")
+#visualización rápida: Grafica de la relación entre distancias genéticas y geográficas:
+import matplotlib.pyplot as plt
+import numpy as np
+plt.scatter(geo_matrix[np.triu_indices_from(geo_matrix, k=1)],
+            gen_matrix[np.triu_indices_from(gen_matrix, k=1)],
+            alpha=0.5)
+plt.xlabel("Distancia geográfica (km)")
+plt.ylabel("Distancia genética")
+plt.title("Correlación geográfica-genética Paul Pscal Pbrid (Mantel)")
+plt.grid(True)
+plt.show()
