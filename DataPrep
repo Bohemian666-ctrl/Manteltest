@@ -1,0 +1,33 @@
+# Preparacion de la Data, matriz de distancia Genetica y Geografica en formatos csv
+
+# Matriz de distancia Genetica
+# conda install numpy pandas scipy
+import allel
+import numpy as np
+import pandas as pd
+from scipy.spatial.distance import pdist, squareform
+# Cargar la ruta VCF
+callset = allel.read_vcf("Pomacea111.vcf", fields=["samples", "calldata/GT"])
+# Extraer nombres de muestras y genotipos
+samples = callset["samples"]
+genotypes = allel.GenotypeArray(callset["calldata/GT"])
+# Convertir a formato numérico: 0 (homocigoto ref), 1 (heterocigoto), 2 (homocigoto alt), -1 (missing)
+gn = genotypes.to_n_alt(fill=-1)
+# Transponer: muestras como filas
+gn_T = gn.T
+# Rellenar datos faltantes (opcional): por ejemplo, con la media de cada SNP
+gn_T_imputed = np.where(gn_T == -1, np.nan, gn_T)
+means = np.nanmean(gn_T_imputed, axis=0)
+gn_T_filled = np.where(np.isnan(gn_T_imputed), means, gn_T_imputed)
+# Calcular matriz de distancias genéticas (euclidianas o IBS)
+dist_matrix = pdist(gn_T_filled, metric='euclidean')  # puedes cambiar a 'cityblock', 'correlation', etc.
+dist_matrix_square = squareform(dist_matrix)
+# Guardar la matriz como CSV
+df = pd.DataFrame(dist_matrix_square, index=samples, columns=samples)
+df.to_csv("matriz_distancia_genetica.csv")
+
+# Matriz de distancia Geografica: Debe tener la siguiente forma guardada en csv Archivo de valores separados por comas
+# codigo,latitude,longitude
+# Padol_AD33.trim,-5.229139,-78.356556
+# Padol_AD36.trim,-5.229139,-78.356556
+# Padol_AE238.trim,-5.500000,-73.500000
